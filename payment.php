@@ -1,9 +1,16 @@
 <?php 
+session_start();
 include 'db.php'; 
-if (!isset($_SESSION['user'])) { header("Location: login.php"); exit(); }
-if (!isset($_GET['booking_id'])) { header("Location: home.php"); exit(); }
 
-$booking_id = $_GET['booking_id'];
+if (!isset($_SESSION['user'])) { header("Location: login.php"); exit(); }
+
+// Kuhaa ang booking_id gikan sa URL
+$booking_id = $_GET['booking_id'] ?? '';
+
+if (empty($booking_id)) {
+    header("Location: home.php");
+    exit();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -19,17 +26,14 @@ $booking_id = $_GET['booking_id'];
         .method-item:hover { border-color: var(--primary); background: #f8fbff; }
         .method-item input { margin-right: 15px; width: 20px; height: 20px; }
         .method-item img { height: 30px; margin-left: auto; }
-        .btn-pay { width: 100%; padding: 18px; background: var(--success); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
-        .btn-pay:hover { background: #218838; transform: scale(1.02); }
-        h2 { color: #333; margin-top: 0; }
-        .ref { font-size: 13px; color: #888; margin-top: 15px; }
+        .btn-pay { width: 100%; padding: 18px; background: var(--success); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
     </style>
 </head>
 <body>
     <div class="payment-card">
         <div style="font-size: 50px;">💳</div>
         <h2>Payment Option</h2>
-        <p style="color: #666;">Pilia ang imong pamaagi sa pagbayad:</p>
+        <p>Booking Reference: #FL-<?php echo htmlspecialchars($booking_id); ?></p>
 
         <form action="process_payment.php" method="POST">
             <input type="hidden" name="booking_id" value="<?php echo $booking_id; ?>">
@@ -39,23 +43,14 @@ $booking_id = $_GET['booking_id'];
                     <span>GCash / E-Wallet</span>
                     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/GCash_logo.svg/1024px-GCash_logo.svg.png">
                 </label>
-                
                 <label class="method-item">
                     <input type="radio" name="pay_method" value="Card">
                     <span>Credit / Debit Card</span>
                     <img src="https://cdn-icons-png.flaticon.com/512/633/633611.png">
                 </label>
-
-                <label class="method-item">
-                    <input type="radio" name="pay_method" value="OTC">
-                    <span>Over-the-Counter</span>
-                    <img src="https://cdn-icons-png.flaticon.com/512/2830/2830284.png">
-                </label>
             </div>
-
             <button type="submit" class="btn-pay">COMPLETE PAYMENT</button>
         </form>
-        <div class="ref">Booking Reference: #FL-<?php echo $booking_id; ?></div>
     </div>
 </body>
 </html>

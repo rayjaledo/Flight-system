@@ -2,104 +2,106 @@
 session_start();
 include 'db.php'; 
 
-// Protection
 if (!isset($_SESSION['user'])) { header("Location: login.php"); exit(); }
 
-$flight_id = $_GET['flight_id'] ?? '';
-$class = $_GET['class'] ?? 'Economy';
+$user_id = $_SESSION['user_id'];
+
+// Query para makuha ang bookings kauban ang flight details (JOIN)
+$sql = "SELECT b.*, f.airline, f.origin, f.destination, f.price, f.flight_date 
+        FROM bookings b 
+        JOIN flights f ON b.flight_id = f.id 
+        WHERE b.user_id = '$user_id' 
+        ORDER BY b.booking_date DESC";
+
+$result = mysqli_query($conn, $sql);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Passenger Info - FlightEase</title>
+    <title>My Bookings - FlightEase</title>
     <style>
-        :root { --primary: #0062E3; --hover: #0056b3; }
-        body { 
-            margin: 0; font-family: 'Inter', sans-serif; 
-            /* Same background sa home/login para consistent */
-            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), 
-                        url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1350&q=80'); 
-            background-size: cover; background-position: center;
-            display: flex; justify-content: center; align-items: center; min-height: 100vh; 
+        :root { --primary: #0062E3; --dark: #1e293b; --bg: #f8fafc; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; padding: 40px 10%; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h2 { margin: 0; color: var(--dark); font-size: 28px; }
+        
+        /* Ticket Design */
+        .ticket {
+            background: white; border-radius: 15px; display: flex; overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; border-left: 8px solid var(--primary);
         }
+        
+        .ticket-main { padding: 25px; flex: 3; border-right: 2px dashed #e2e8f0; position: relative; }
+        .ticket-stub { padding: 25px; flex: 1; background: #fdfdfd; display: flex; flex-direction: column; justify-content: center; text-align: center; }
+        
+        .airline-label { font-size: 12px; font-weight: bold; color: var(--primary); text-transform: uppercase; margin-bottom: 5px; display: block; }
+        .route { display: flex; align-items: center; gap: 15px; margin: 15px 0; }
+        .city { font-size: 24px; font-weight: 800; color: var(--dark); }
+        
+        .info-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px; }
+        .label { font-size: 11px; color: #64748b; text-transform: uppercase; display: block; }
+        .value { font-size: 14px; font-weight: 600; color: var(--dark); }
+        
+        .status-badge { background: #dcfce7; color: #166534; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .barcode { font-family: 'Libre Barcode 39', cursive; font-size: 40px; margin-top: 10px; opacity: 0.3; }
 
-        .box { 
-            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
-            padding: 40px; border-radius: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); 
-            width: 100%; max-width: 450px; text-align: center; 
-        }
-
-        h2 { color: var(--primary); font-weight: 800; margin-bottom: 5px; }
-        .flight-badge { 
-            background: #eef4ff; color: var(--primary); 
-            padding: 5px 15px; border-radius: 20px; 
-            font-size: 13px; font-weight: 700; display: inline-block; margin-bottom: 25px;
-        }
-
-        .form-group { text-align: left; margin-bottom: 15px; }
-        label { display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 5px; margin-left: 5px; }
-
-        input, select { 
-            width: 100%; padding: 12px; border: 1px solid #ddd; 
-            border-radius: 12px; box-sizing: border-box; outline: none; 
-            font-size: 15px; background: #f8fafc; transition: 0.3s;
-        }
-        input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(0,98,227,0.1); }
-
-        .row { display: flex; gap: 15px; }
-        .row .form-group { flex: 1; }
-
-        .btn-confirm { 
-            width: 100%; padding: 15px; background: var(--primary); color: white; 
-            border: none; border-radius: 12px; font-weight: 700; font-size: 16px;
-            cursor: pointer; transition: 0.3s; margin-top: 20px;
-        }
-        .btn-confirm:hover { background: var(--hover); transform: translateY(-2px); }
-
-        .back-btn { display: block; margin-top: 20px; color: #64748b; text-decoration: none; font-size: 14px; }
-        .back-btn:hover { color: var(--primary); }
+        .btn-home { background: var(--primary); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+39&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<div class="box">
-    <h2>Passenger Details</h2>
-    <div class="flight-badge">Flight ID: #<?php echo htmlspecialchars($flight_id); ?> | Class: <?php echo htmlspecialchars($class); ?></div>
-
-    <form action="confirm_booking.php" method="POST">
-        <input type="hidden" name="flight_id" value="<?php echo $flight_id; ?>">
-        <input type="hidden" name="class" value="<?php echo $class; ?>">
-
-        <div class="form-group">
-            <label>First Name</label>
-            <input type="text" name="first_name" placeholder="Juan" required>
-        </div>
-
-        <div class="form-group">
-            <label>Last Name</label>
-            <input type="text" name="last_name" placeholder="Dela Cruz" required>
-        </div>
-
-        <div class="row">
-            <div class="form-group">
-                <label>Age</label>
-                <input type="number" name="age" placeholder="25" required>
-            </div>
-            <div class="form-group">
-                <label>Gender</label>
-                <select name="gender">
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                </select>
-            </div>
-        </div>
-
-        <button type="submit" class="btn-confirm">CONFIRM BOOKING</button>
-    </form>
-
-    <a href="results.php" class="back-btn">← Cancel and go back</a>
+<div class="header">
+    <div>
+        <h2>My Boarding Passes</h2>
+        <p style="color: #64748b; margin-top: 5px;">You have <?php echo mysqli_num_rows($result); ?> confirmed bookings.</p>
+    </div>
+    <a href="home.php" class="btn-home">Book New Flight</a>
 </div>
+
+<?php if(mysqli_num_rows($result) > 0): ?>
+    <?php while($row = mysqli_fetch_assoc($result)): ?>
+        <div class="ticket">
+            <div class="ticket-main">
+                <span class="airline-label">✈️ <?php echo $row['airline']; ?></span>
+                <div class="route">
+                    <span class="city"><?php echo $row['origin']; ?></span>
+                    <span style="color: #cbd5e1;">————————</span>
+                    <span class="city"><?php echo $row['destination']; ?></span>
+                </div>
+                
+                <div class="info-row">
+                    <div>
+                        <span class="label">Passenger</span>
+                        <span class="value"><?php echo strtoupper($row['passenger_name']); ?></span>
+                    </div>
+                    <div>
+                        <span class="label">Flight Date</span>
+                        <span class="value"><?php echo date('M d, Y', strtotime($row['flight_date'])); ?></span>
+                    </div>
+                    <div>
+                        <span class="label">Class</span>
+                        <span class="value"><?php echo $row['class']; ?></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="ticket-stub">
+                <span class="label" style="margin-bottom: 5px;">Status</span>
+                <div><span class="status-badge">CONFIRMED</span></div>
+                <div class="barcode">12345678</div>
+                <span class="label" style="margin-top: 5px;">Seat: AUTO</span>
+            </div>
+        </div>
+    <?php endwhile; ?>
+<?php else: ?>
+    <div style="text-align: center; padding: 100px; background: white; border-radius: 20px;">
+        <h3 style="color: #94a3b8;">No bookings found.</h3>
+        <p style="color: #94a3b8;">Your future trips will appear here.</p>
+    </div>
+<?php endif; ?>
 
 </body>
 </html>
