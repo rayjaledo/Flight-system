@@ -76,7 +76,12 @@ if (isset($_POST['login'])) {
 </head>
 <body>
     <div class="box">
-        <h2>✈️ Welcome Back</h2>
+        <h2 style="display: flex; align-items: center; gap: 15px; font-weight: 800; color: #00253c; margin-bottom: 20px;">
+    <img src="https://img.freepik.com/free-vector/airplane-with-circle-flight-path_78370-4778.jpg?semt=ais_rp_progressive&w=740&q=80" 
+         alt="Plane Icon" 
+         style="width: 50px; height: 50px; object-fit: contain;"> 
+    Welcome Back
+</h2>
         <p class="subtitle">Please enter your details to login</p>
 
         <?php if ($error_msg): ?>

@@ -21,13 +21,10 @@ if (isset($_GET['dates']) && !empty($_GET['dates'])) {
 
 // 3. SQL Query
 $sql = "SELECT * FROM flights WHERE origin = '$from' AND destination = '$to'";
-//if (!empty($departure_date)) {
- //   $sql .= " AND flight_date = '$departure_date'";
-//}
 $sql .= " ORDER BY price ASC";
 $result = mysqli_query($conn, $sql);
 
-// 4. Function para sa images (Gibalik sulod sa PHP tag)
+// 4. Function para sa images
 function getCityImage($city) {
     $city = strtolower(trim($city));
     $images = [
@@ -56,32 +53,54 @@ function getCityImage($city) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Available Flights - FlightEase</title>
     <style>
-        :root { --primary: #0062E3; --dark: #1e293b; --skeleton: #e2e8f0; }
-        body { font-family: 'Inter', sans-serif; background: #f1f5f9; margin: 0; padding: 40px 10%; }
-        .header { margin-bottom: 30px; }
+        :root { --primary: #0062E3; --dark: #00253c; --skeleton: #e2e8f0; }
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; margin: 0; padding: 20px 10%; }
+        
+        /* Navigation / Logo Styling */
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; }
+        .logo { font-size: 26px; font-weight: 800; text-decoration: none; color: var(--dark); display: flex; align-items: center; gap: 10px; }
+        .logo-img { height: 30px; width: auto; }
+
+        .header { margin-top: 20px; margin-bottom: 30px; }
         .header h2 { font-size: 32px; color: var(--dark); margin: 0; }
+        
+        /* Grid and Cards */
         .deals-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
         .ticket-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); transition: 0.3s; cursor: pointer; }
         .ticket-card:hover { transform: translateY(-8px); box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
+        
         .img-wrap { height: 180px; width: 100%; overflow: hidden; position: relative; background: var(--skeleton); }
         .ticket-img { width: 100%; height: 100%; object-fit: cover; display: block; transition: 0.5s; }
-        .ticket-card:hover .ticket-img { transform: scale(1.1); }
+        
         .content { padding: 20px; }
         .content h3 { margin: 0; font-size: 22px; color: var(--dark); }
-        .content p { color: #64748b; margin: 5px 0; font-size: 14px; }
+        
+        /* Airline Info with Mini Icon */
+        .airline-info { display: flex; align-items: center; gap: 8px; color: #64748b; margin: 8px 0; font-size: 14px; }
+        .mini-icon { height: 16px; width: auto; }
+        
+        .content .date-info { color: #64748b; margin: 5px 0; font-size: 14px; display: flex; align-items: center; gap: 5px; }
+        
         .footer { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
         .price { font-size: 24px; font-weight: 800; color: var(--primary); }
         .btn-book { background: var(--primary); color: white; padding: 10px 20px; border-radius: 10px; font-weight: bold; text-decoration: none; }
+        
         .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
         .modal-box { background: white; padding: 30px; border-radius: 20px; width: 400px; position: relative; }
     </style>
 </head>
 <body>
 
-<div class="header">
+<div class="navbar">
+    <a href="home.php" class="logo">
+        Cheapflights <img src="https://img.freepik.com/premium-vector/airplane-icon-flat-transportation-plane-symbol-sign-air-fly-isolated-white-background_89223-500.jpg?w=360" class="logo-img">
+    </a>
     <a href="home.php" style="text-decoration:none; color:var(--primary); font-weight:bold;">← Change Search</a>
+</div>
+
+<div class="header">
     <h2>Flights to <?php echo strtoupper($to); ?></h2>
-    <p>Found <?php echo mysqli_num_rows($result); ?> available flights</p>
+    <p>Found <?php echo mysqli_num_rows($result); ?> available flights from <?php echo $from; ?></p>
 </div>
 
 <div class="deals-grid">
@@ -93,8 +112,16 @@ function getCityImage($city) {
                 </div>
                 <div class="content">
                     <h3><?php echo $row['destination']; ?></h3>
-                    <p>✈️ <?php echo $row['airline']; ?> • <?php echo $class; ?></p>
-                    <p>📅 <?php echo date('M d, Y', strtotime($row['flight_date'])); ?> • <?php echo date('h:i A', strtotime($row['departure_time'])); ?></p>
+                    
+                    <p class="airline-info">
+                        <img src="https://img.freepik.com/free-vector/airplane-with-circle-flight-path_78370-4778.jpg?semt=ais_rp_progressive&w=740&q=80" class="mini-icon">
+                        <?php echo $row['airline']; ?> • <?php echo $class; ?>
+                    </p>
+                    
+                    <p class="date-info">
+                        📅 <?php echo date('M d, Y', strtotime($row['flight_date'])); ?> • <?php echo date('h:i A', strtotime($row['departure_time'])); ?>
+                    </p>
+                    
                     <div class="footer">
                         <div class="price">₱<?php echo number_format($row['price']); ?></div>
                         <div class="btn-book">Book Now</div>
@@ -105,7 +132,7 @@ function getCityImage($city) {
     <?php else: ?>
         <div style="grid-column: 1/-1; text-align: center; padding: 50px;">
             <img src="https://cdn-icons-png.flaticon.com/512/6134/6134065.png" width="100" style="opacity:0.5">
-            <p style="color:#64748b; font-size:18px; margin-top:20px;">No flights found for this route on this date.</p>
+            <p style="color:#64748b; font-size:18px; margin-top:20px;">No flights found for this route.</p>
         </div>
     <?php endif; ?>
 </div>
