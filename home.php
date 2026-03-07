@@ -1,10 +1,10 @@
 <?php 
 session_start();
-if (!isset($_SESSION['user'])) { header("Location: login.php"); exit(); }
+
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
 
-// Function para sa picture base sa destination gamit imong links
+// Function para sa picture base sa destination
 function getCityImage($city) {
     $city = strtolower($city);
     $images = [
@@ -32,66 +32,59 @@ function getCityImage($city) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlightEase - Booking</title>
+    <title>Cheapflights - Booking</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
     <style>
-        :root { --primary: #0062E3; --secondary: #FFD200; --bg: #f1f5f9; --dark: #0f172a; }
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--dark); }
+        :root { --primary: #0062E3; --secondary: #FFD200; --bg: #f1f5f9; --dark: #0f172a; --text-muted: #64748b; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--dark); line-height: 1.6; }
         
         .navbar { background: white; padding: 15px 10%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
         .logo { font-size: 26px; font-weight: 800; text-decoration: none; color: #00253c; display: flex; align-items: center; gap: 10px; }
-        .logout-link { color: #ef4444; text-decoration: none; font-weight: 700; background: #fef2f2; padding: 8px 15px; border-radius: 20px; }
 
-        /* GIPABILIN ANG BACKGROUND */
         .hero { 
             background: linear-gradient(135deg, rgba(0,98,227,0.7), rgba(0,98,227,0.4)), url('https://wallpaperaccess.com/full/254367.png'); 
-            height: 450px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; background-size: cover; background-position: center;
+            height: 400px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; background-size: cover; background-position: center;
         }
 
         .search-container { max-width: 1250px; width: 95%; background: white; margin: -50px auto 50px; padding: 25px; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.12); position: relative; z-index: 1000; }
         .trip-type-container { display: flex; gap: 20px; margin-bottom: 20px; }
-        .trip-type-label { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; cursor: pointer; color: #64748b; }
+        .trip-type-label { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; cursor: pointer; color: var(--text-muted); }
         .trip-type-label.active { color: var(--primary); }
 
         .search-grid { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; position: relative; }
-        
-        /* ICONS POSITIONING - GIBALIK SA SULOD */
         .input-group { flex: 1; min-width: 180px; display: flex; flex-direction: column; position: relative; }
-        .input-group label { font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase; }
+        .input-group label { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; }
         
         .field-box { 
-            padding: 12px 12px 12px 40px; /* Space para sa icon sa left */
+            padding: 12px 12px 12px 40px; 
             border: 1px solid #ddd; border-radius: 8px; font-size: 14px; font-weight: 600; 
             background: #fff; width: 100%; cursor: pointer; display: flex; 
             align-items: center; height: 45px; box-sizing: border-box; outline: none; 
         }
 
-        /* I-adjust ang icons para naa sa sulod sa box */
-        .input-group i { 
-            position: absolute; 
-            left: 15px; 
-            top: 32px; /* I-align base sa height sa box human sa label */
-            color: #4b5563; 
-            z-index: 10;
-            pointer-events: none;
-        }
+        .input-group i { position: absolute; left: 15px; top: 32px; color: #4b5563; z-index: 10; pointer-events: none; }
 
-        /* Travelers Dropdown */
-        .dropdown-content { display: none; position: absolute; top: 100%; right: 0; width: 350px; background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); padding: 20px; z-index: 2001; border: 1px solid #eee; margin-top: 10px; }
-        .traveler-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .qty-controls { display: flex; align-items: center; gap: 15px; }
-        .qty-btn { width: 32px; height: 32px; border-radius: 50%; border: 1px solid #0062E3; background: white; color: #0062E3; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .dropdown-content { display: none; position: absolute; top: 100%; right: 0; width: 320px; background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); padding: 20px; z-index: 2001; border: 1px solid #eee; margin-top: 10px; }
+        .traveler-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #f8fafc; }
+        .traveler-row:last-of-type { border-bottom: none; }
+        .traveler-row span { font-weight: 700; font-size: 14px; color: #1e293b; }
+        .traveler-row small { color: var(--text-muted); font-size: 11px; display: block; }
+        
+        .qty-controls { display: flex; align-items: center; gap: 12px; }
+        .qty-btn { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--primary); background: white; color: var(--primary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; transition: 0.2s; }
+        .qty-btn:hover { background: var(--primary); color: white; }
+        .qty-num { font-weight: 700; min-width: 20px; text-align: center; font-size: 15px; }
+        
         .cabin-select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-weight: 600; margin-top: 10px; }
 
         .search-btn { background: var(--secondary); border: none; height: 45px; width: 45px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; }
         .show { display: block !important; }
 
-        /* Recommendations */
-        .recommendations-section { max-width: 1250px; margin: 0 auto 80px; padding: 0 25px; }
+        .recommendations-section { max-width: 1250px; margin: 0 auto 50px; padding: 0 25px; }
         .rec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
         .rec-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: 0.3s; cursor: pointer; border: 1px solid #efefef; text-decoration: none; color: inherit; }
         .rec-card:hover { transform: translateY(-5px); }
@@ -99,17 +92,32 @@ function getCityImage($city) {
         .rec-body { padding: 15px; }
         .rec-dest { font-size: 18px; margin: 5px 0; color: #333; font-weight: 700; display: flex; align-items: center; gap: 8px; }
 
+        .about-section { max-width: 900px; margin: 80px auto 100px; padding: 0 25px; text-align: center; }
+        .about-section h2 { font-size: 28px; font-weight: 700; color: #1a1d1f; margin-bottom: 20px; }
+        .about-section p { font-size: 16px; color: #4b5563; line-height: 1.8; margin-bottom: 40px; }
+        .info-item h3 { font-size: 22px; font-weight: 700; color: #1a1d1f; margin-bottom: 20px; }
+        .info-item ul { list-style: none; padding: 0; display: inline-block; text-align: left; }
+        .info-item li { position: relative; padding-left: 25px; margin-bottom: 15px; font-size: 15px; color: #4b5563; }
+        .info-item li::before { content: "✓"; position: absolute; left: 0; color: var(--primary); font-weight: bold; }
+
         .suggest-results { display: none; position: absolute; top: 100%; left: 0; width: 100%; background: white; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 3000; border: 1px solid #eee; margin-top: 5px; max-height: 250px; overflow-y: auto; }
         .suggest-item { padding: 12px 15px; cursor: pointer; font-size: 14px; border-bottom: 1px solid #f8fafc; }
+
+        /* FOOTER STYLES */
+        footer { background-color: #ffffff; padding: 30px 0; border-top: 1px solid #e2e8f0; text-align: center; width: 100%; margin-top: 50px; }
+        footer p { color: #64748b; font-size: 14px; margin: 0; font-weight: 500; }
+        .footer-links { margin-top: 10px; }
+        .footer-links a { color: var(--primary); text-decoration: none; font-size: 13px; margin: 0 10px; transition: 0.2s; }
+        .footer-links a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
 
 <div class="navbar">
-    <a href="home.php" class="logo">Cheapflights <i class="fa-solid fa-plane"></i></a>
-    <div>
-        <a href="my_bookings.php" style="margin-right:20px; text-decoration:none; color:#64748b; font-weight:600;">My Bookings</a>
-        <a href="logout.php" class="logout-link">Logout</a>
+    <a href="home.php" class="logo">Cheapflights ✈</a>
+    <div class="nav-links" style="display: flex; align-items: center; gap: 20px;">
+        <a href="login.php" style="text-decoration: none; color: #0062E3; font-weight: 700;">Log in</a>
+        <a href="signup.php" style="text-decoration: none; color: white; background: #0062E3; padding: 8px 20px; border-radius: 20px; font-weight: 700;">Sign up</a>
     </div>
 </div>
 
@@ -149,37 +157,49 @@ function getCityImage($city) {
             <div class="input-group">
                 <label>TRAVELERS</label>
                 <i class="fa-solid fa-user"></i>
-                <div class="field-box" id="travelerTrigger"><span id="summaryText">1 adult, Economy</span></div>
+                <div class="field-box" id="travelerTrigger"><span id="summaryText">1 traveler, Economy</span></div>
                 
                 <div class="dropdown-content" id="travelerMenu">
-                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Please select travelers</p>
+                    <p style="font-size: 11px; color: #666; margin-bottom: 15px; font-weight: 700; text-transform: uppercase;">Select Travelers (Max 9)</p>
+                    
+                    <?php 
+                    $pax_types = [
+                        ['id'=>'adults', 'label'=>'Adults', 'sub'=>'18+ years', 'default'=>1],
+                        ['id'=>'students', 'label'=>'Students', 'sub'=>'over 18', 'default'=>0],
+                        ['id'=>'youths', 'label'=>'Youths', 'sub'=>'12-17 years', 'default'=>0],
+                        ['id'=>'children', 'label'=>'Children', 'sub'=>'2-11 years', 'default'=>0],
+                        ['id'=>'toddlers', 'label'=>'Toddlers', 'sub'=>'in own seat', 'default'=>0],
+                        ['id'=>'infants', 'label'=>'Infants', 'sub'=>'on lap', 'default'=>0]
+                    ];
+                    foreach($pax_types as $p): ?>
                     <div class="traveler-row">
-                        <div><span>Adults</span><br><small>12+ years</small></div>
+                        <div><span><?php echo $p['label']; ?></span><small><?php echo $p['sub']; ?></small></div>
                         <div class="qty-controls">
-                            <button type="button" class="qty-btn" onclick="updateQty('adults', -1)">-</button>
-                            <span id="adultsQty">1</span>
-                            <button type="button" class="qty-btn" onclick="updateQty('adults', 1)">+</button>
+                            <button type="button" class="qty-btn" onclick="updateQty('<?php echo $p['id']; ?>', -1)">-</button>
+                            <span class="qty-num" id="<?php echo $p['id']; ?>Qty"><?php echo $p['default']; ?></span>
+                            <button type="button" class="qty-btn" onclick="updateQty('<?php echo $p['id']; ?>', 1)">+</button>
                         </div>
                     </div>
-                    <div class="traveler-row">
-                        <div><span>Children</span><br><small>2-11 years</small></div>
-                        <div class="qty-controls">
-                            <button type="button" class="qty-btn" onclick="updateQty('children', -1)">-</button>
-                            <span id="childrenQty">0</span>
-                            <button type="button" class="qty-btn" onclick="updateQty('children', 1)">+</button>
-                        </div>
-                    </div>
-                    <select class="cabin-select" id="cabinClass" name="class" onchange="updateSummary()">
-                        <option value="Economy">Economy</option>
-                        <option value="Business">Business</option>
-                        <option value="First class">First class</option>
+                    <?php endforeach; ?>
+                    
+                    <select class="cabin-select" id="cabinClass" name="cabin" onchange="updateSummary()">
+                        <option value="Economy Class">Economy</option>
+                        <option value="Premium Economy">Premium Economy</option>
+                        <option value="Business Class">Business</option>
+                        <option value="First Class">First class</option>
                     </select>
                 </div>
             </div>
 
             <button type="submit" class="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
         </div>
+        
         <input type="hidden" name="adults" id="adultsInput" value="1">
+        <input type="hidden" name="students" id="studentsInput" value="0">
+        <input type="hidden" name="youths" id="youthsInput" value="0">
+        <input type="hidden" name="children" id="childrenInput" value="0">
+        <input type="hidden" name="toddlers" id="toddlersInput" value="0">
+        <input type="hidden" name="infants" id="infantsInput" value="0">
     </form>
 </div>
 
@@ -191,7 +211,6 @@ function getCityImage($city) {
             ['from' => 'Cebu', 'to' => 'Manila', 'price' => '1,137'], 
             ['from' => 'Cebu', 'to' => 'Davao', 'price' => '1,060'], 
             ['from' => 'Cebu', 'to' => 'Boracay', 'price' => '1,522'],
-            ['from' => 'Cebu', 'to' => 'Iloilo', 'price' => '1,111'], 
             ['from' => 'Cebu', 'to' => 'Siargao', 'price' => '3,200'],
             ['from' => 'Cebu', 'to' => 'Palawan', 'price' => '1,890'],
             ['from' => 'Cebu', 'to' => 'Bacolod', 'price' => '1,137']
@@ -208,6 +227,27 @@ function getCityImage($city) {
         <?php endforeach; ?>
     </div>
 </div>
+
+<div class="about-section">
+    <h2>About Cheapflights</h2>
+    <p>Cheapflights is your trusted partner for finding convenient and affordable travel options. Through our advanced search engine, we strive to make your planning simple and seamless—from flights. Our service is free for you because we are committed to providing the best value to every traveler. We are proud to be part of your travel stories!</p>
+
+    <div class="info-item">
+        <h3>How to get the most out of Cheapflights</h3>
+        <ul>
+            <li>Use our filtering tools to customize your results based on your budget, schedule, and travel comfort.</li>
+            <li>Always check the total price to ensure transparency of all fees before making a purchase.</li>
+            <li>Keep in mind that flight prices can change quickly, so it’s best to book immediately when you find a great deal.</li>
+        </ul>
+    </div>
+</div>
+
+<footer>
+    <div class="footer-container">
+        <p>&copy; 2026 Cheapflights. All rights reserved.</p>
+        
+    </div>
+</footer>
 
 <script>
     const destinations = ["Manila (MNL)", "Davao (DVO)", "Boracay (MPH)", "Siargao (IAO)", "Palawan (PPS)", "Bohol (TAG)", "Iloilo (ILO)", "Bacolod (BCD)"];
@@ -248,19 +288,27 @@ function getCityImage($city) {
         if(!dInput.contains(e.target)) dSug.style.display = 'none';
     };
 
-    const counts = { adults: 1, children: 0 };
+    const counts = { adults: 1, students: 0, youths: 0, children: 0, toddlers: 0, infants: 0 };
+    
     function updateQty(type, change) {
+        let currentTotal = Object.values(counts).reduce((a, b) => a + b, 0);
         if (type === 'adults' && counts[type] + change < 1) return;
         if (counts[type] + change < 0) return;
+        if (change > 0 && currentTotal >= 9) {
+            alert("Maximum of 9 travelers only.");
+            return;
+        }
         counts[type] += change;
         document.getElementById(type + 'Qty').innerText = counts[type];
+        document.getElementById(type + 'Input').value = counts[type];
         updateSummary();
     }
+
     function updateSummary() {
-        let total = counts.adults + counts.children;
-        let cabin = document.getElementById('cabinClass').value;
-        document.getElementById('summaryText').innerText = `${total} traveler${total>1?'s':''}, ${cabin}`;
-        document.getElementById('adultsInput').value = total;
+        let total = Object.values(counts).reduce((a, b) => a + b, 0);
+        let cabinSelect = document.getElementById('cabinClass');
+        let cabinText = cabinSelect.options[cabinSelect.selectedIndex].text;
+        document.getElementById('summaryText').innerText = `${total} traveler${total > 1 ? 's' : ''}, ${cabinText}`;
     }
 </script>
 </body>

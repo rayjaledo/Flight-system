@@ -2,11 +2,7 @@
 session_start();
 include 'db.php'; 
 
-// 1. Kung naka-login na, i-diretso sa home
-if (isset($_SESSION['user'])) { 
-    header("Location: home.php"); 
-    exit(); 
-}
+
 
 // 2. PHP Logic para sa Registration
 $msg = "";

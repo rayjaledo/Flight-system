@@ -3,10 +3,7 @@ session_start();
 include 'db.php'; 
 
 // Kung naka-login na, i-kick padulong sa home
-if (isset($_SESSION['user'])) { 
-    header("Location: home.php"); 
-    exit(); 
-}
+
 
 // 2. No-Cache Protection
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
